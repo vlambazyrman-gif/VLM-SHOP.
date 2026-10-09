@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#050505">
+<title>VLM SHOP</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root {
+  --bg:#050505;
+  --card:#151515;
+  --blue:#1677FF;
+  --line:#202b3b;
+  --text:#fff;
+  --muted:#a0a7b4;
+}
+* {
+  box-sizing:border-box;
+}
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+button,input {
+  font:inherit;
+}
+button {
+  cursor:pointer;
+}
+.app {
+  max-width:950px;
+  margin:auto;
+  padding:18px 15px 100px;
+}
+.top {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:24px;
+}
+.logo {
+  flex:1;
+  font-size:25px;
+  font-weight:900;
+  letter-spacing:1px;
+}
+.logo span {
+  color:var(--blue);
+}
+.icon {
+  width:44px;
+  height:44px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--card);
+  color:white;
+  font-size:21px;
+}
+.icon:active,
+.btn:active {
+  background:#075bd0;
+}
+.search {
+  width:100%;
+  padding:15px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--card);
+  color:white;
+  outline:none;
+}
+.search:focus,
+.field:focus {
+  border-color:var(--blue);
+}
+.section-title {
+  margin:25px 0 5px;
+  font-size:22px;
+  font-weight:800;
+}
+.subtitle {
+  color:var(--muted);
+  font-size:13px;
+}
+.chips,
+.sorts {
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding:14px 0;
+  scrollbar-width:none;
+}
+.chips::-webkit-scrollbar,
+.sorts::-webkit-scrollbar {
+  display:none;
+}
+.chip,
+.sort {
+  flex-shrink:0;
+  padding:10px 15px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--card);
+  color:white;
+}
+.chip.active,
+.sort.active {
+  background:var(--blue);
+  border-color:var(--blue);
+}
+.grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.product {
+  min-width:0;
+  overflow:hidden;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:17px;
+  cursor:pointer;
+  transition:border-color .2s,transform .2s;
+}
+.product:active {
+  transform:scale(.98);
+}
+.product:hover {
+  border-color:var(--blue);
+}
+.pic {
+  width:100%;
+  aspect-ratio:1/1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#0b0d12;
+  color:#737e90;
+  overflow:hidden;
+}
+.placeholder {
+  font-size:48px;
+  color:var(--blue);
+  text-shadow:0 0 24px #1677ff66;
+}
+.pbody {
+  padding:12px;
+}
+.name {
+  font-size:15px;
+  font-weight:750;
+  overflow-wrap:anywhere;
+}
+.stock {
+  margin-top:7px;
+  font-size:12px;
+  color:#36a3ff;
+}
+.stock.out {
+  color:#888;
+}
+.price {
+  margin-top:9px;
+  font-size:18px;
+  font-weight:850;
+}
+.empty {
+  grid-column:1/-1;
+  padding:40px 10px;
+  text-align:center;
+  color:var(--muted);
+}
+.btn {
+  width:100%;
+  padding:14px;
+  border:0;
+  border-radius:12px;
+  background:var(--blue);
+  color:white;
+  font-weight:750;
+  transition:background .15s;
+}
+.btn:hover {
+  background:#0868ed;
+}
+.btn:disabled {
+  opacity:.5;
+  cursor:not-allowed;
+}
+.cartbar {
+  position:fixed;
+  display:none;
+  align-items:center;
+  justify-content:space-between;
+  left:12px;
+  right:12px;
+  bottom:12px;
+  max-width:920px;
+  margin:auto;
+  padding:16px;
+  background:var(--blue);
+  color:white;
+  border-radius:15px;
+  font-weight:800;
+  z-index:10;
+  box-shadow:0 5px 30px #0009;
+  cursor:pointer;
+}
+.cartbar.show {
+  display:flex;
+}
+.overlay,
+.modal {
+  position:fixed;
+  inset:0;
+  z-index:20;
+  display:none;
+  background:#000b;
+}
+.overlay.show,
+.modal.show {
+  display:block;
+}
+.sheet {
+  position:absolute;
+  top:0;
+  right:0;
+  width:min(88%,400px);
+  height:100%;
+  overflow-y:auto;
+  padding:24px;
+  background:#101116;
+  border-left:1px solid var(--line);
+}
+.close {
+  float:right;
+  border:0;
+  background:none;
+  color:white;
+  font-size:29px;
+}
+.menuitem {
+  width:100%;
+  padding:17px 0;
+  text-align:left;
+  border:0;
+  border-bottom:1px solid var(--line);
+  background:none;
+  color:white;
+}
+.menuitem:hover {
+  color:#58a0ff;
+}
+.modal {
+  z-index:30;
+  overflow-y:auto;
+  padding:20px 12px;
+}
+.modal.show {
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+}
+.modalbox {
+  position:relative;
+  width:100%;
+  max-width:550px;
+  max-height:90vh;
+  overflow-y:auto;
+  padding:22px;
+  border:1px solid var(--line);
+  border-radius:22px 22px 16px 16px;
+  background:#101116;
+}
+.muted {
+  color:var(--muted);
+  line-height:1.6;
+}
+.qty {
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.qty button {
+  width:34px;
+  height:34px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:var(--card);
+  color:white;
+}
+.variant {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 0;
+  border-bottom:1px solid var(--line);
+}
+.field {
+  width:100%;
+  padding:14px;
+  margin:7px 0;
+  border:1px solid var(--line);
+  border-radius:11px;
+  background:var(--card);
+  color:white;
+  outline:none;
+}
+.field[readonly] {
+  opacity:.85;
+  cursor:not-allowed;
+}
+.footer {
+  margin-top:35px;
+  padding-top:20px;
+  border-top:1px solid var(--line);
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+}
+@media(min-width:650px) {
+  .grid {
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:16px;
+  }
+  .app {
+    padding-top:28px;
+  }
+}
+@media(min-width:850px) {
+  .grid {
+    grid-template-columns:repeat(4,minmax(0,1fr));
+  }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="logo">VLM <span>SHOP</span></div>
+    <button class="icon"
+      onclick="openCart()"
+      aria-label="Корзина">🛒</button>
+    <button class="icon"
+      onclick="openMenu()"
+      aria-label="Меню">☰</button>
+  </header>
+  <input
+    id="search"
+    class="search"
+    placeholder="⌕ Поиск товаров..."
+    oninput="render()"
+    aria-label="Поиск товаров">
+  <div class="section-title">КАТАЛОГ</div>
+  <div class="subtitle">Выбери то, что тебе нужно</div>
+  <div id="cats" class="chips"></div>
+  <div class="sorts">
+    <button
+      id="sortStock"
+      class="sort active"
+      onclick="setSort('stock')">
+      По наличию ↓
+    </button>
+    <button
+      id="sortName"
+      class="sort"
+      onclick="setSort('name')">
+      По названию
+    </button>
+  </div>
+  <div id="grid" class="grid"></div>
+  <footer class="footer">
+    VLM SHOP · BLACK & ELECTRIC BLUE
+  </footer>
+</div>
+<div id="cartbar" class="cartbar" onclick="openCart()">
+  <span>🛒 Открыть корзину</span>
+  <span id="cartCount">0</span>
+</div>
+<!-- МЕНЮ -->
+<div
+  id="menuOverlay"
+  class="overlay"
+  onclick="if(event.target===this)closeMenu()">
+  <div class="sheet">
+    <button class="close" onclick="closeMenu()">×</button>
+    <h2>VLM SHOP</h2>
+    <p class="muted">Меню магазина</p>
+    <button class="menuitem"
+      onclick="info('О магазине','Добро пожаловать в VLM SHOP!')">
+      О магазине
+    </button>
+    <button class="menuitem"
+      onclick="info('Доставка','Место встречи: возле McDonald’s. Уточните детали у менеджера.')">
+      Доставка
+    </button>
+    <button class="menuitem"
+      onclick="info('Оплата','Уточните доступные способы оплаты у менеджера.')">
+      Оплата
+    </button>
+    <button class="menuitem" onclick="contact()">
+      👨‍💼 Связаться с менеджером
+    </button>
+    <button class="menuitem" onclick="telegram()">
+      ✈️ Перейти в Telegram-магазин
+    </button>
+    <p class="muted">Black & Electric Blue</p>
+  </div>
+</div>
+<!-- КАРТОЧКА ТОВАРА -->
+<div
+  id="productModal"
+  class="modal"
+  onclick="if(event.target===this)closeProduct()">
+  <div class="modalbox" id="productBox"></div>
+</div>
+<!-- КОРЗИНА -->
+<div
+  id="cartModal"
+  class="modal"
+  onclick="if(event.target===this)closeCart()">
+  <div class="modalbox">
+    <button class="close" onclick="closeCart()">×</button>
+    <h2>Корзина</h2>
+    <div id="cartItems"></div>
+    <div
+      id="cartTotal"
+      style="margin:16px 0;font-weight:800">
+    </div>
+    <button
+      id="checkoutBtn"
+      class="btn"
+      onclick="checkout()">
+      Оформить заказ
+    </button>
+  </div>
+</div>
+<script>
+const tg = window.Telegram?.WebApp;
+tg?.ready();
+tg?.expand();
+const CONTACT_URL = "https://t.me/Manager_VLM";
+const SHOP_URL = "https://t.me/VLM_SHOP";
+const MEETING_ADDRESS = "Возле McDonald's";
+const CURRENCY = "zł";
+/*
+  СПИСОК ТОВАРОВ
+  name  — название товара
+  cat   — категория
+  price — цена в злотых
+  stock — количество на складе
+  desc  — описание
+  Фотографии отключены.
+*/
+let category = "Все";
+let sort = "stock";
+let cart = [];
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  }[c]));
+}
+const products = &#91;
+  \{
+    id:1,
+    name:"Xros 6",
+    cat:"Устройства",
+    price:160,
+    stock:8,
+    desc:""
+  \},
+  \{
+    id:2,
+    name:"Cartridge",
+    cat:"Картриджи",
+    price:30,
+    stock:4,
+    desc:""
+  \},
+  \{
+    id:3,
+    name:"Elfliq",
+    cat:"Жидкость",
+    price:55,
+    stock:0,
+    desc:""
+  \},
+  \{
+    id:4,
+    name:"ElfBar Moon Night 40K",
+    cat:"Одноразки",
+    price:80,
+    stock:11,
+    desc:""
+  \},
+  \{
+    id:5,
+    name:"Xros 6 mini",
+    cat:"Устройства",
+    price:140,
+    stock:6,
+    desc:""
+  \},
+  \{
+    id:6,
+    name:"Cartridge",
+    cat:"Картриджи",
+    price:30,
+    stock:3,
+    desc:""
+  \}
+&#93;;
+function money&#40;n&#41; \{
+  return \`$\{n\} $\{CURRENCY\}\`;
+\}
+/\* КАТЕГОРИИ \*/
+function categories&#40;&#41; \{
+  const cs = &#91;
+    "Все",
+    "Устройства",
+    "Картриджи",
+    "Жидкость",
+    "Одноразки"
+  &#93;;
+  document\.getElementById&#40;"cats"&#41;\.innerHTML = cs\.map&#40;c =\> \`
+    <button class="chip $\{c===category?'active':''\}"
+      onclick="chooseCategory&#40;'$\{esc&#40;c&#41;\}'&#41;"\>
+      $\{esc&#40;c&#41;\}
+    </button\>
+  \`&#41;\.join&#40;""&#41;;
+\}
+function chooseCategory&#40;c&#41; \{
+  category = c;
+  render&#40;&#41;;
+\}
+/\* КАТАЛОГ \*/
+function render&#40;&#41; \{
+  categories&#40;&#41;;
+  const q = document
+    \.getElementById&#40;"search"&#41;
+    \.value
+    \.trim&#40;&#41;
+    \.toLowerCase&#40;&#41;;
+  let arr = products\.filter&#40;p =\>
+    &#40;category === "Все" \|\| p\.cat === category&#41; &&
+    p\.name\.toLowerCase&#40;&#41;\.includes&#40;q&#41;
+  &#41;;
+  if &#40;sort === "stock"&#41; \{
+    arr\.sort&#40;&#40;a,b&#41; =\> b\.stock\-a\.stock&#41;;
+  \} else \{
+    arr\.sort&#40;&#40;a,b&#41; =\> a\.name\.localeCompare&#40;b\.name,"ru"&#41;&#41;;
+  \}
+  document\.getElementById&#40;"grid"&#41;\.innerHTML = arr\.length
+    ? arr\.map&#40;p =\> \`
+      <article class="product" onclick="openProduct&#40;$\{p\.id\}&#41;"\>
+        <div class="pic"\>
+          <span class="placeholder"\>✦</span\>
+        </div\>
+        <div class="pbody"\>
+          <div class="name"\>$\{esc&#40;p\.name&#41;\}</div\>
+          <div class="stock $\{p\.stock<=0?'out':''\}"\>
+            $\{p\.stock\>0
+              ? \`● В наличии &#40;$\{p\.stock\}&#41;\`
+              : "Нет в наличии"\}
+          </div\>
+          <div class="price"\>$\{money&#40;p\.price&#41;\}</div\>
+        </div\>
+      </article\>
+    \`&#41;\.join&#40;""&#41;
+    : \`<div class="empty"\>Ничего не найдено</div\>\`;
+  updateCartBar&#40;&#41;;
+\}
+function setSort&#40;s&#41; \{
+  sort = s;
+  document\.getElementById&#40;"sortStock"&#41;
+    \.classList\.toggle&#40;"active",s==="stock"&#41;;
+  document\.getElementById&#40;"sortName"&#41;
+    \.classList\.toggle&#40;"active",s==="name"&#41;;
+  render&#40;&#41;;
+\}
+/\* МЕНЮ \*/
+function openMenu&#40;&#41; \{
+  document\.getElementById&#40;"menuOverlay"&#41;
+    \.classList\.add&#40;"show"&#41;;
+\}
+function closeMenu&#40;&#41; \{
+  document\.getElementById&#40;"menuOverlay"&#41;
+    \.classList\.remove&#40;"show"&#41;;
+\}
+function info&#40;title,text&#41; \{
+  closeMenu&#40;&#41;;
+  alert&#40;title\+"\\n\\n"\+text&#41;;
+\}
+function openTelegram&#40;url&#41; \{
+  closeMenu&#40;&#41;;
+  if &#40;tg && tg\.initData&#41; \{
+    tg\.openTelegramLink&#40;url&#41;;
+  \} else \{
+    window\.open&#40;url,"\_blank","noopener"&#41;;
+  \}
+\}
+function contact&#40;&#41; \{
+  openTelegram&#40;CONTACT\_URL&#41;;
+\}
+function telegram&#40;&#41; \{
+  openTelegram&#40;SHOP\_URL&#41;;
+\}
+/\* КАРТОЧКА ТОВАРА \*/
+function openProduct&#40;id&#41; \{
+  const p = products\.find&#40;x =\> x\.id === id&#41;;
+  if &#40;\!p&#41; return;
+  const qty = cart\.find&#40;x =\> x\.pid === id&#41;?\.qty \|\| 0;
+  document\.getElementById&#40;"productBox"&#41;\.innerHTML = \`
+    <button class="close" onclick="closeProduct&#40;&#41;"\>×</button\>
+    <h2\>$\{esc&#40;p\.name&#41;\}</h2\>
+    <div class="pic" style="border\-radius:14px"\>
+      <span class="placeholder"\>✦</span\>
+    </div\>
+    <h2\>$\{money&#40;p\.price&#41;\}</h2\>
+    <p class="muted"\>$\{esc&#40;p\.desc&#41;\}</p\>
+    <p class="muted"\>
+      Категория: $\{esc&#40;p\.cat&#41;\}<br\>
+      В наличии: $\{p\.stock\}
+    </p\>
+    <div class="variant"\>
+      <div style="flex:1"\>Количество</div\>
+      <div class="qty"\>
+        <button onclick="change&#40;$\{p\.id\},\-1&#41;"\>−</button\>
+        <span id="q\-$\{p\.id\}"\>$\{qty\}</span\>
+        <button
+          onclick="change&#40;$\{p\.id\},1&#41;"
+          $\{p\.stock<=0?'disabled':''\}\>\+</button\>
+      </div\>
+    </div\>
+    <button
+      class="btn"
+      style="margin\-top:18px"
+      onclick="closeProduct&#40;&#41;;openCart&#40;&#41;"\>
+      Перейти в корзину
+    </button\>
+  \`;
+  document\.getElementById&#40;"productModal"&#41;
+    \.classList\.add&#40;"show"&#41;;
+\}
+function closeProduct&#40;&#41; \{
+  document\.getElementById&#40;"productModal"&#41;
+    \.classList\.remove&#40;"show"&#41;;
+\}
+/\* ИЗМЕНЕНИЕ КОЛИЧЕСТВА \*/
+function change&#40;pid,d&#41; \{
+  const p = products\.find&#40;x =\> x\.id === pid&#41;;
+  if &#40;\!p \|\| &#40;d \> 0 && p\.stock <= 0&#41;&#41; return;
+  let item = cart\.find&#40;x =\> x\.pid === pid&#41;;
+  if &#40;\!item && d \> 0&#41; \{
+    item = \{pid,qty:0\};
+    cart\.push&#40;item&#41;;
+  \}
+  if &#40;item&#41; \{
+    if &#40;d \> 0 && item\.qty \>= p\.stock&#41; \{
+      alert&#40;"Больше товара нет в наличии\."&#41;;
+      return;
+    \}
+    item\.qty = Math\.max&#40;0,item\.qty\+d&#41;;
+    if &#40;item\.qty === 0&#41; \{
+      cart = cart\.filter&#40;x =\> x \!== item&#41;;
+    \}
+  \}
+  const q = document\.getElementById&#40;"q\-"\+pid&#41;;
+  if &#40;q&#41; \{
+    q\.textContent = cart\.find&#40;x =\> x\.pid === pid&#41;?\.qty \|\| 0;
+  \}
+  updateCartBar&#40;&#41;;
+\}
+/\* ПАНЕЛЬ КОРЗИНЫ \*/
+function updateCartBar&#40;&#41; \{
+  const n = cart\.reduce&#40;&#40;s,x&#41; =\> s\+x\.qty,0&#41;;
+  document\.getElementById&#40;"cartCount"&#41;\.textContent = n;
+  document\.getElementById&#40;"cartbar"&#41;
+    \.classList\.toggle&#40;"show",n\>0&#41;;
+\}
+/\* КОРЗИНА \*/
+function openCart&#40;&#41; \{
+  const box = document\.getElementById&#40;"cartItems"&#41;;
+  const checkoutBtn = document\.getElementById&#40;"checkoutBtn"&#41;;
+  if &#40;\!cart\.length&#41; \{
+    box\.innerHTML = '<p class="muted"\>Корзина пока пуста\.</p\>';
+    document\.getElementById&#40;"cartTotal"&#41;\.textContent = "";
+  \} else \{
+    let total = 0;
+    box\.innerHTML = cart\.map&#40;x =\> \{
+      const p = products\.find&#40;a =\> a\.id === x\.pid&#41;;
+      if &#40;\!p&#41; return "";
+      const sum = p\.price\*x\.qty;
+      total \+= sum;
+      return \`
+        <div class="variant"\>
+          <div style="flex:1"\>
+            $\{esc&#40;p\.name&#41;\}
+          </div\>
+          <div\>
+            $\{x\.qty\} × $\{money&#40;p\.price&#41;\}
+          </div\>
+          <button
+            class="qty"
+            onclick="change&#40;$\{p\.id\},\-1&#41;;openCart&#40;&#41;"\>
+            −
+          </button\>
+        </div\>
+      \`;
+    \}&#41;\.join&#40;""&#41;;
+    document\.getElementById&#40;"cartTotal"&#41;\.textContent =
+      "Итого: "\+money&#40;total&#41;;
+  \}
+  checkoutBtn\.style\.display = "block";
+  document\.getElementById&#40;"cartModal"&#41;
+    \.classList\.add&#40;"show"&#41;;
+\}
+function closeCart&#40;&#41; \{
+  document\.getElementById&#40;"cartModal"&#41;
+    \.classList\.remove&#40;"show"&#41;;
+\}
+/\* ОФОРМЛЕНИЕ ЗАКАЗА \*/
+function checkout&#40;&#41; \{
+  if &#40;\!cart\.length&#41; \{
+    alert&#40;"Корзина пуста\."&#41;;
+    return;
+  \}
+  document\.getElementById&#40;"cartItems"&#41;\.innerHTML = \`
+    <h3\>Контактные данные</h3\>
+    <p class="muted"\>
+      Проверь контактные данные перед отправкой заказа\.
+    </p\>
+    <input
+      id="customerName"
+      class="field"
+      placeholder="Ваше имя"
+      autocomplete="name"
+      maxlength="100"\>
+    <input
+      id="customerContact"
+      class="field"
+      placeholder="Телефон или @username"
+      autocomplete="tel"
+      maxlength="100"\>
+    <label for="customerComment" class="muted"\>
+      Место встречи
+    </label\>
+    <input
+      id="customerComment"
+      class="field"
+      value="$\{esc&#40;MEETING\_ADDRESS&#41;\}"
+      readonly
+      aria\-readonly="true"\>
+    <button class="btn" onclick="sendOrder&#40;&#41;"\>
+      Перейти к отправке заказа в Telegram
+    </button\>
+    <button
+      class="btn"
+      style="margin\-top:10px;background:\#252a35"
+      onclick="openCart&#40;&#41;"\>
+      Назад в корзину
+    </button\>
+  \`;
+  document\.getElementById&#40;"cartTotal"&#41;\.textContent = "";
+  document\.getElementById&#40;"checkoutBtn"&#41;\.style\.display = "none";
+\}
+/\* ОТПРАВКА ЗАКАЗА В TELEGRAM \*/
+function sendOrder&#40;&#41; \{
+  const name = document
+    \.getElementById&#40;"customerName"&#41;
+    \.value\.trim&#40;&#41;;
+  const contactValue = document
+    \.getElementById&#40;"customerContact"&#41;
+    \.value\.trim&#40;&#41;;
+  if &#40;\!name \|\| \!contactValue&#41; \{
+    alert&#40;"Заполни имя и контакт\."&#41;;
+    return;
+  \}
+  if &#40;\!cart\.length&#41; \{
+    alert&#40;"Корзина пуста\."&#41;;
+    return;
+  \}
+  let total = 0;
+  const itemsText = cart\.map&#40;x =\> \{
+    const p = products\.find&#40;a =\> a\.id === x\.pid&#41;;
+    if &#40;\!p&#41; return "";
+    const sum = p\.price\*x\.qty;
+    total \+= sum;
+    return \`• $\{p\.name\} — $\{x\.qty\} шт\. × $\{money&#40;p\.price&#41;\} = $\{money&#40;sum&#41;\}\`;
+  \}&#41;\.filter&#40;Boolean&#41;\.join&#40;"\\n"&#41;;
+  const orderText =
+\`🛍️ НОВЫЙ ЗАКАЗ — VLM SHOP
+👤 Имя: $\{name\}
+📞 Контакт: $\{contactValue\}
+📦 Товары:
+$\{itemsText\}
+💰 Итого: $\{money&#40;total&#41;\}
+📍 Место встречи: $\{MEETING\_ADDRESS\}
+Пожалуйста, подтвердите заказ\.\`;
+  const url = CONTACT\_URL \+ "?text=" \+ encodeURIComponent&#40;orderText&#41;;
+  /\*
+    Корзина сохраняется, пока пользователь не нажмёт
+    кнопку отправки\. После подготовки заказа очищаем её\.
+  \*/
+  cart = &#91;&#93;;
+  updateCartBar&#40;&#41;;
+  closeCart&#40;&#41;;
+  closeProduct&#40;&#41;;
+  if &#40;tg && tg\.initData&#41; \{
+    tg\.openTelegramLink&#40;url&#41;;
+  \} else \{
+    window\.open&#40;url,"\_blank","noopener"&#41;;
+  \}
+  alert&#40;
+    "Telegram откроется для отправки заказа\. " \+
+    "Проверь сообщение и нажми «Отправить» в чате менеджера\. " \+
+    "Заказ не отправится автоматически\."
+  &#41;;
+\}
+/\* ЗАПУСК \*/
+render&#40;&#41;;
+</script\>
+</body\>
+</html\>
+\`\`\`
