@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VLM SHOP</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg: #080b12;
+      --card: #121927;
+      --blue: #1687ff;
+      --light-blue: #54adff;
+      --text: #f5f7ff;
+      --muted: #8996ad;
+      --border: #253149;
+      --green: #4de0a3;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 16px;
+      padding-bottom: 35px;
+      background: radial-gradient(ellipse at top, #122747, var(--bg) 55%);
+      color: var(--text);
+      font-family: Arial, sans-serif;
+    }
+    button, input, select {
+      font: inherit;
+    }
+    button {
+      cursor: pointer;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+    .logo {
+      font-size: 25px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+    .logo span {
+      color: var(--light-blue);
+    }
+    .contact {
+      padding: 10px 12px;
+      color: white;
+      text-decoration: none;
+      background: #172944;
+      border: 1px solid #2b4d78;
+      border-radius: 12px;
+      font-size: 13px;
+    }
+    .hero {
+      padding: 24px 19px;
+      border: 1px solid #254d7c;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #16345b, #101522 80%);
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: 28px;
+      margin: 0 0 9px;
+    }
+    .hero p {
+      margin: 0;
+      color: #c0cee3;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .section-title {
+      margin: 22px 0 13px;
+      font-size: 20px;
+      font-weight: 800;
+    }
+    .search-row {
+      display: flex;
+      gap: 9px;
+      margin-bottom: 14px;
+    }
+    .search, .sort {
+      padding: 12px;
+      color: white;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      outline: none;
+    }
+    .search {
+      flex: 1;
+      width: 100%;
+      min-width: 0;
+    }
+    .search:focus {
+      border-color: var(--blue);
+    }
+    .sort {
+      width: 120px;
+    }
+    .categories {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 13px;
+      scrollbar-width: none;
+    }
+    .categories::-webkit-scrollbar {
+      display: none;
+    }
+    .category {
+      flex-shrink: 0;
+      padding: 10px 14px;
+      color: #bac5d8;
+      background: #111724;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 13px;
+    }
+    .category.active {
+      color: white;
+      background: var(--blue);
+      border-color: var(--blue);
+      font-weight: bold;
+    }
+    .products {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .product {
+      min-width: 0;
+      overflow: hidden;
+      background: linear-gradient(160deg, #161e2e, #0e131e);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+    }
+    .product-art {
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle, #1b3e69, #101725 70%);
+      border-bottom: 1px solid var(--border);
+    }
+    .product-art span {
+      color: var(--light-blue);
+      font-size: 35px;
+      font-weight: 900;
+      text-shadow: 0 0 22px #1687ff66;
+    }
+    .product-info {
+      padding: 12px;
+    }
+    .product-name {
+      font-size: 15px;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+      margin-bottom: 7px;
+    }
+    .product-category {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .price {
+      color: var(--light-blue);
+      font-size: 17px;
+      font-weight: 900;
+    }
+    .product-bottom {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .add-btn, .checkout {
+      width: 100%;
+      padding: 11px;
+      color: white;
+      background: var(--blue);
+      border: 0;
+      border-radius: 11px;
+      font-weight: 800;
+    }
+    .add-btn:disabled, .checkout:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+    .stock {
+      margin-top: 10px;
+      color: var(--green);
+      font-size: 11px;
+    }
+    .stock.out {
+      color: #ff6176;
+    }
+    .empty {
+      grid-column: 1 / -1;
+      padding: 35px 10px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .cart-panel {
+      margin-top: 25px;
+      padding: 16px;
+      background: #101827;
+      border: 1px solid #25436b;
+      border-radius: 19px;
+    }
+    .cart-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 20px;
+      font-weight: 800;
+    }
+    .cart-count {
+      padding: 5px 9px;
+      background: var(--blue);
+      border-radius: 9px;
+      font-size: 13px;
+    }
+    .cart-empty {
+      padding: 8px 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .cart-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .cart-item-name {
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .cart-item-price {
+      margin-top: 5px;
+      color: var(--light-blue);
+      font-size: 13px;
+    }
+    .quantity {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .quantity button {
+      width: 29px;
+      height: 29px;
+      color: white;
+      background: #17263d;
+      border: 1px solid #2b4569;
+      border-radius: 9px;
+    }
+    .discount-note {
+      margin-top: 13px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .cart-total {
+      display: flex;
+      justify-content: space-between;
+      margin: 18px 0;
+      font-size: 18px;
+      font-weight: 900;
+    }
+    .footer {
+      margin-top: 25px;
+      text-align: center;
+      color: #66748c;
+      font-size: 12px;
+    }
+    @media (max-width: 350px) {
+      body {
+        padding: 10px;
+      }
+      .sort {
+        width: 105px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">VLM <span>SHOP</span></div>
+    <a class="contact"
+       href="https://t.me/Manager_VLM"
+       target="_blank"
+       rel="noopener">
+      Связаться
+    </a>
+  </header>
+  <section class="hero">
+    <h1>VLM SHOP</h1>
+    <p>Добро пожаловать! Выбирай товары и добавляй их в корзину.</p>
+  </section>
+  <div class="section-title">Каталог</div>
+  <div class="search-row">
+    <input
+      class="search"
+      id="search"
+      type="search"
+      placeholder="Поиск товаров..."
+    >
+    <select class="sort" id="sort" aria-label="Сортировка">
+      <option value="default">Сортировка</option>
+      <option value="cheap">Дешевле</option>
+      <option value="expensive">Дороже</option>
+      <option value="name">По названию</option>
+    </select>
+  </div>
+  <div class="categories" id="categories"></div>
+  <div class="products" id="products"></div>
+  <section class="cart-panel">
+    <div class="cart-title">
+      <span>Корзина</span>
+      <span class="cart-count" id="cartCount">0</span>
+    </div>
+    <div id="cartItems">
+      <div class="cart-empty">Корзина пока пустая</div>
+    </div>
+    <div class="discount-note" id="discountNote"></div>
+    <div class="cart-total">
+      <span>Итого</span>
+      <span id="total">0 zł</span>
+    </div>
+    <button class="checkout" id="checkout" disabled>
+      Оформить заказ
+    </button>
+  </section>
+  <div class="footer">VLM SHOP</div>
+  <script>
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
+    const CONTACT_URL = "https://t.me/Manager_VLM";
+    // Пример обычных товаров. Замени названия, категории и цены
+    // на данные своих разрешённых к продаже товаров.
+    const products = [
+      { id: 1, name: "Товар A", category: "Аксессуары", price: 20, stock: 8 },
+      { id: 2, name: "Товар B", category: "Аксессуары", price: 30, stock: 4 },
+      { id: 3, name: "Товар C", category: "Новинки", price: 40, stock: 10 },
+      { id: 4, name: "Товар D", category: "Хиты", price: 25, stock: 11 },
+      { id: 5, name: "Товар E", category: "Новинки", price: 50, stock: 6 },
+      { id: 6, name: "Товар F", category: "Хиты", price: 35, stock: 3 }
+    ];
+    const categoryNames = [
+      "Все",
+      "Аксессуары",
+      "Новинки",
+      "Хиты"
+    ];
+    let activeCategory = "Все";
+    let cart = {};
+    const productsElement = document.getElementById("products");
+    const categoriesElement = document.getElementById("categories");
+    const searchElement = document.getElementById("search");
+    const sortElement = document.getElementById("sort");
+    function renderCategories() {
+      categoriesElement.innerHTML = categoryNames.map(category => `
+        <button
+          class="category ${activeCategory === category ? "active" : ""}"
+          data-category="${category}"
+        >${category}</button>
+      `).join("");
+      categoriesElement.querySelectorAll("button").forEach(button => {
+        button.addEventListener("click", () => {
+          activeCategory = button.dataset.category;
+          renderCategories();
+          renderProducts();
+        });
+      });
+    }
+    function renderProducts() {
+      const query = searchElement.value.trim().toLowerCase();
+      let filtered = products.filter(product => {
+        const matchesCategory =
+          activeCategory === "Все" ||
+          product.category === activeCategory;
+        const matchesSearch =
+          product.name.toLowerCase().includes(query);
+        return matchesCategory && matchesSearch;
+      });
+      if (sortElement.value === "cheap") {
+        filtered.sort((a, b) => a.price - b.price);
+      } else if (sortElement.value === "expensive") {
+        filtered.sort((a, b) => b.price - a.price);
+      } else if (sortElement.value === "name") {
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+      }
+      if (!filtered.length) {
+        productsElement.innerHTML =
+          '<div class="empty">Товары не найдены</div>';
+        return;
+      }
+      productsElement.innerHTML = filtered.map(product => {
+        const outOfStock = product.stock <= 0;
+        return `
+          <article class="product">
+            <div class="product-art"><span>VLM</span></div>
+            <div class="product-info">
+              <div class="product-name">${product.name}</div>
+              <div class="product-category">${product.category}</div>
+              <div class="product-bottom">
+                <div class="price">${product.price} zł</div>
+                <button
+                  class="add-btn"
+                  data-id="${product.id}"
+                  ${outOfStock ? "disabled" : ""}
+                >
+                  ${outOfStock ? "Нет в наличии" : "＋ Добавить"}
+                </button>
+              </div>
+              <div class="stock ${outOfStock ? "out" : ""}">
+                ${outOfStock ? "Нет в наличии" : "В наличии: " + product.stock}
+              </div>
+            </div>
+          </article>
+        `;
+      }).join("");
+      productsElement.querySelectorAll(".add-btn").forEach(button => {
+        button.addEventListener("click", () => {
+          addToCart(Number(button.dataset.id));
+        });
+      });
+    }
+    function addToCart(id) {
+      const product = products.find(item => item.id === id);
+      if (!product || product.stock <= 0) return;
+      const quantity = cart[id] || 0;
+      if (quantity >= product.stock) {
+        alert("Больше товара нет в наличии.");
+        return;
+      }
+      cart[id] = quantity + 1;
+      tg?.HapticFeedback?.impactOccurred("light");
+      renderCart();
+    }
+    function changeQuantity(id, delta) {
+      const product = products.find(item => item.id === id);
+      if (!product) return;
+      const next = (cart[id] || 0) + delta;
+      if (next <= 0) {
+        delete cart[id];
+      } else if (next <= product.stock) {
+        cart[id] = next;
+      }
+      renderCart();
+    }
+    function renderCart() {
+      const cartItemsElement = document.getElementById("cartItems");
+      const entries = Object.entries(cart);
+      let count = 0;
+      let total = 0;
+      let discountMessage = [];
+      if (!entries.length) {
+        cartItemsElement.innerHTML =
+          '<div class="cart-empty">Корзина пока пустая</div>';
+      } else {
+        cartItemsElement.innerHTML = entries.map(([id, quantity]) => {
+          const product = products.find(item => item.id === Number(id));
+          if (!product) return "";
+          count += quantity;
+          total += product.price * quantity;
+          return `
+            <div class="cart-item">
+              <div>
+                <div class="cart-item-name">${product.name}</div>
+                <div class="cart-item-price">
+                  ${product.price} zł × ${quantity}
+                </div>
+              </div>
+              <div class="quantity">
+                <button data-id="${id}" data-delta="-1">−</button>
+                <span>${quantity}</span>
+                <button
+                  data-id="${id}"
+                  data-delta="1"
+                  ${quantity >= product.stock ? "disabled" : ""}
+                >+</button>
+              </div>
+            </div>
+          `;
+        }).join("");
+        cartItemsElement.querySelectorAll("button").forEach(button => {
+          button.addEventListener("click", () => {
+            changeQuantity(
+              Number(button.dataset.id),
+              Number(button.dataset.delta)
+            );
+          });
+        });
+      }
+      document.getElementById("cartCount").textContent = count;
+      document.getElementById("total").textContent = total + " zł";
+      document.getElementById("checkout").disabled = count === 0;
+      document.getElementById("discountNote").textContent =
+        discountMessage.join(" ");
+    }
+    document.getElementById("checkout").addEventListener("click", () => {
+      const entries = Object.entries(cart);
+      if (!entries.length) return;
+      const lines = entries.map(([id, quantity]) => {
+        const product = products.find(item => item.id === Number(id));
+        return `${product.name} — ${quantity} шт. × ${product.price} zł`;
+      });
+      const total = entries.reduce((sum, [id, quantity]) => {
+        const product = products.find(item => item.id === Number(id));
+        return sum + product.price * quantity;
+      }, 0);
+      const message = [
+        "Здравствуйте! Хочу оформить заказ в VLM SHOP:",
+        "",
+        ...lines,
+        "",
+        `Итого: ${total} zł`
+      ].join("\n");
+      const url = CONTACT_URL + "?text=" + encodeURIComponent(message);
+      if (tg) {
+        tg.openTelegramLink(url);
+      } else {
+        window.open(url, "_blank", "noopener");
+      }
+    });
+    searchElement.addEventListener("input", renderProducts);
+    sortElement.addEventListener("change", renderProducts);
+    renderCategories();
+    renderProducts();
+    renderCart();
+  </script>
+</body>
+</html>
