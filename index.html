@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050505">
+  <title>VLM SHOP</title>
+  <style>
+    :root {
+      --bg: #050505;
+      --card: #151515;
+      --blue: #1677ff;
+      --line: #202b3b;
+      --text: #fff;
+      --muted: #a0a7b4;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    }
+    button,
+    input {
+      font: inherit;
+    }
+    button {
+      cursor: pointer;
+    }
+    .app {
+      max-width: 950px;
+      margin: auto;
+      padding: 20px 15px 100px;
+    }
+    .top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .logo {
+      flex: 1;
+      font-size: 25px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+    .logo span {
+      color: var(--blue);
+    }
+    .icon {
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--card);
+      color: white;
+      font-size: 20px;
+    }
+    .search {
+      width: 100%;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--card);
+      color: white;
+      outline: none;
+    }
+    .search:focus {
+      border-color: var(--blue);
+    }
+    .section-title {
+      margin: 25px 0 5px;
+      font-size: 22px;
+      font-weight: 800;
+    }
+    .subtitle,
+    .muted {
+      color: var(--muted);
+    }
+    .subtitle {
+      font-size: 13px;
+    }
+    .chips,
+    .sorts {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 14px 0;
+      scrollbar-width: none;
+    }
+    .chips::-webkit-scrollbar,
+    .sorts::-webkit-scrollbar {
+      display: none;
+    }
+    .chip,
+    .sort {
+      flex-shrink: 0;
+      padding: 10px 15px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--card);
+      color: white;
+    }
+    .chip.active,
+    .sort.active {
+      background: var(--blue);
+      border-color: var(--blue);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .product {
+      min-width: 0;
+      overflow: hidden;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      cursor: pointer;
+      transition: border-color .2s, transform .2s;
+    }
+    .product:hover {
+      border-color: var(--blue);
+    }
+    .product:active {
+      transform: scale(.98);
+    }
+    .pic {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0b0d12;
+    }
+    .placeholder {
+      font-size: 48px;
+      color: var(--blue);
+      text-shadow: 0 0 24px #1677ff66;
+    }
+    .pbody {
+      padding: 12px;
+    }
+    .name {
+      font-size: 15px;
+      font-weight: 750;
+      overflow-wrap: anywhere;
+    }
+    .stock {
+      margin-top: 7px;
+      font-size: 12px;
+      color: #36a3ff;
+    }
+    .stock.out {
+      color: #888;
+    }
+    .price {
+      margin-top: 9px;
+      font-size: 18px;
+      font-weight: 850;
+    }
+    .empty {
+      grid-column: 1 / -1;
+      padding: 40px 10px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .cartbar {
+      position: fixed;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      max-width: 920px;
+      margin: auto;
+      padding: 16px;
+      background: var(--blue);
+      color: white;
+      border-radius: 15px;
+      font-weight: 800;
+      z-index: 10;
+      box-shadow: 0 5px 30px #0009;
+      cursor: pointer;
+    }
+    .cartbar.show {
+      display: flex;
+    }
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 12px;
+      overflow-y: auto;
+      background: #000b;
+    }
+    .modal.show {
+      display: flex;
+    }
+    .modalbox {
+      width: 100%;
+      max-width: 550px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: #101116;
+    }
+    .close {
+      float: right;
+      border: 0;
+      background: none;
+      color: white;
+      font-size: 29px;
+    }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--blue);
+      color: white;
+      font-weight: 750;
+    }
+    .btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+    .qty {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .qty button {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--card);
+      color: white;
+    }
+    .variant {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .footer {
+      margin-top: 35px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    @media (min-width: 650px) {
+      .grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+    }
+    @media (min-width: 850px) {
+      .grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="top">
+      <div class="logo">VLM <span>SHOP</span></div>
+      <button class="icon" onclick="openCart()"
+        aria-label="Открыть корзину">🛒</button>
+    </header>
+    <input
+      id="search"
+      class="search"
+      type="search"
+      placeholder="⌕ Поиск товаров..."
+      aria-label="Поиск товаров">
+    <div class="section-title">КАТАЛОГ</div>
+    <div class="subtitle">Выбери то, что тебе нужно</div>
+    <div id="cats" class="chips"></div>
+    <div class="sorts">
+      <button id="sortStock" class="sort active"
+        onclick="setSort('stock')">
+        По наличию ↓
+      </button>
+      <button id="sortName" class="sort"
+        onclick="setSort('name')">
+        По названию
+      </button>
+    </div>
+    <section id="grid" class="grid"
+      aria-label="Каталог товаров"></section>
+    <footer class="footer">
+      VLM SHOP · BLACK & ELECTRIC BLUE
+    </footer>
+  </main>
+  <div id="cartbar" class="cartbar"
+    onclick="openCart()">
+    <span>🛒 Открыть корзину</span>
+    <span id="cartCount">0</span>
+  </div>
+  <div id="productModal" class="modal"
+    onclick="if(event.target === this) closeProduct()">
+    <div class="modalbox" id="productBox"></div>
+  </div>
+  <div id="cartModal" class="modal"
+    onclick="if(event.target === this) closeCart()">
+    <div class="modalbox">
+      <button class="close" onclick="closeCart()"
+        aria-label="Закрыть">×</button>
+      <h2>Корзина</h2>
+      <div id="cartItems"></div>
+      <div id="cartTotal"
+        style="margin:16px 0;font-weight:800"></div>
+    </div>
+  </div>
+  <script>
+    "use strict";
+    const CURRENCY = "zł";
+    const products = [
+      {
+        id: 1,
+        name: "Аксессуар 1",
+        cat: "Аксессуары",
+        price: 30,
+        stock: 8,
+        desc: "Описание товара."
+      },
+      {
+        id: 2,
+        name: "Аксессуар 2",
+        cat: "Аксессуары",
+        price: 45,
+        stock: 4,
+        desc: "Описание товара."
+      },
+      {
+        id: 3,
+        name: "Устройство 1",
+        cat: "Электроника",
+        price: 160,
+        stock: 6,
+        desc: "Описание товара."
+      },
+      {
+        id: 4,
+        name: "Устройство 2",
+        cat: "Электроника",
+        price: 140,
+        stock: 0,
+        desc: "Временно отсутствует."
+      }
+    ];
+    let category = "Все";
+    let sort = "stock";
+    let cart = [];
+    const $ = id => document.getElementById(id);
+    function esc(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[char]);
+    }
+    function money(value) {
+      return `${value} ${CURRENCY}`;
+    }
+    function categories() {
+      const list = [
+        "Все",
+        ...new Set(products.map(product => product.cat))
+      ];
+      $("cats").innerHTML = list.map(cat => `
+        <button
+          class="chip ${cat === category ? "active" : ""}"
+          data-category="${esc(cat)}">
+          ${esc(cat)}
+        </button>
+      `).join("");
+    }
+    $("cats").addEventListener("click", event => {
+      const button = event.target.closest("[data-category]");
+      if (!button) return;
+      category = button.dataset.category;
+      render();
+    });
+    $("search").addEventListener("input", render);
+    function render() {
+      categories();
+      const query = $("search").value.trim().toLocaleLowerCase("ru");
+      const list = products.filter(product => {
+        const categoryMatches =
+          category === "Все" || product.cat === category;
+        const searchMatches =
+          product.name.toLocaleLowerCase("ru").includes(query);
+        return categoryMatches && searchMatches;
+      });
+      list.sort((a, b) => {
+        if (sort === "stock") {
+          return b.stock - a.stock || a.name.localeCompare(b.name, "ru");
+        }
+        return a.name.localeCompare(b.name, "ru");
+      });
+      $("grid").innerHTML = list.length
+        ? list.map(product => `
+          <article
+            class="product"
+            data-product="${product.id}"
+            tabindex="0"
+            role="button"
+            aria-label="Открыть ${esc(product.name)}">
+            <div class="pic">
+              <span class="placeholder">✦</span>
+            </div>
+            <div class="pbody">
+              <div class="name">${esc(product.name)}</div>
+              <div class="stock ${product.stock === 0 ? "out" : ""}">
+                ${product.stock > 0
+                  ? `● В наличии (${product.stock})`
+                  : "Нет в наличии"}
+              </div>
+              <div class="price">${money(product.price)}</div>
+            </div>
+          </article>
+        `).join("")
+        : '<div class="empty">Ничего не найдено</div>';
+      updateCartBar();
+    }
+    $("grid").addEventListener("click", event => {
+      const card = event.target.closest("[data-product]");
+      if (card) openProduct(Number(card.dataset.product));
+    });
+    $("grid").addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const card = event.target.closest("[data-product]");
+      if (!card) return;
+      event.preventDefault();
+      openProduct(Number(card.dataset.product));
+    });
+    function setSort(value) {
+      sort = value;
+      $("sortStock").classList.toggle("active", value === "stock");
+      $("sortName").classList.toggle("active", value === "name");
+      render();
+    }
+    function openProduct(id) {
+      const product = products.find(item => item.id === id);
+      if (!product) return;
+      const item = cart.find(item => item.pid === id);
+      const quantity = item ? item.qty : 0;
+      $("productBox").innerHTML = `
+        <button class="close" onclick="closeProduct()"
+          aria-label="Закрыть">×</button>
+        <h2>${esc(product.name)}</h2>
+        <div class="pic" style="border-radius:14px">
+          <span class="placeholder">✦</span>
+        </div>
+        <h2>${money(product.price)}</h2>
+        <p class="muted">${esc(product.desc)}</p>
+        <p class="muted">
+          Категория: ${esc(product.cat)}<br>
+          В наличии: ${product.stock}
+        </p>
+        <div class="variant">
+          <div style="flex:1">Количество</div>
+          <div class="qty">
+            <button onclick="change(${id}, -1)">−</button>
+            <span id="quantity">${quantity}</span>
+            <button
+              onclick="change(${id}, 1)"
+              ${product.stock === 0 || quantity >= product.stock
+                ? "disabled" : ""}>+</button>
+          </div>
+        </div>
+        <button class="btn"
+          style="margin-top:18px"
+          onclick="closeProduct(); openCart()">
+          Перейти в корзину
+        </button>
+      `;
+      $("productModal").classList.add("show");
+    }
+    function closeProduct() {
+      $("productModal").classList.remove("show");
+    }
+    function change(id, delta) {
+      const product = products.find(item => item.id === id);
+      if (!product) return;
+      let item = cart.find(item => item.pid === id);
+      if (delta > 0) {
+        if (product.stock <= 0) return;
+        if (!item) {
+          item = { pid: id, qty: 0 };
+          cart.push(item);
+        }
+        if (item.qty >= product.stock) {
+          alert("Больше товара нет в наличии.");
+          return;
+        }
+        item.qty++;
+      } else if (item) {
+        item.qty--;
+        if (item.qty <= 0) {
+          cart = cart.filter(entry => entry.pid !== id);
+        }
+      }
+      const updated = cart.find(entry => entry.pid === id);
+      if ($("quantity")) {
+        $("quantity").textContent = updated ? updated.qty : 0;
+        const plusButton = $("quantity").nextElementSibling;
+        if (plusButton) {
+          plusButton.disabled =
+            product.stock === 0 ||
+            (updated?.qty || 0) >= product.stock;
+        }
+      }
+      updateCartBar();
+    }
+    function updateCartBar() {
+      const count = cart.reduce((sum, item) => sum + item.qty, 0);
+      $("cartCount").textContent = count;
+      $("cartbar").classList.toggle("show", count > 0);
+    }
+    function openCart() {
+      renderCart();
+      $("cartModal").classList.add("show");
+    }
+    function closeCart() {
+      $("cartModal").classList.remove("show");
+    }
+    function renderCart() {
+      if (cart.length === 0) {
+        $("cartItems").innerHTML =
+          '<p class="muted">Корзина пока пуста.</p>';
+        $("cartTotal").textContent = "";
+        return;
+      }
+      let total = 0;
+      $("cartItems").innerHTML = cart.map(item => {
+        const product = products.find(p => p.id === item.pid);
+        if (!product) return "";
+        const sum = product.price * item.qty;
+        total += sum;
+        return `
+          <div class="variant">
+            <div style="flex:1">
+              ${esc(product.name)}<br>
+              <span class="muted">
+                ${item.qty} × ${money(product.price)}
+              </span>
+            </div>
+            <div class="qty">
+              <button
+                onclick="change(${product.id}, -1); renderCart()">
+                −
+              </button>
+              <span>${item.qty}</span>
+              <button
+                onclick="change(${product.id}, 1); renderCart()"
+                ${item.qty >= product.stock ? "disabled" : ""}>
+                +
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+      $("cartTotal").textContent = `Итого: ${money(total)}`;
+    }
+    render();
+  </script>
+</body>
+</html>
